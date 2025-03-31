@@ -1,0 +1,154 @@
+import 'package:flutter/material.dart';
+import 'dart:math';
+
+class Jogo extends StatefulWidget {
+  const Jogo({Key? key}) : super(key: key);
+
+  @override
+  State<Jogo> createState() => _JogoState();
+}
+
+class _JogoState extends State<Jogo> {
+  var _imagemApp = AssetImage("images/padrao.png");
+  var _resultadoFinal = "Boa sorte!!!";
+  int _vitoriasUsuario = 0;
+  int _vitoriasApp = 0;
+  String _isPressed = ''; // Para identificar o botão pressionado
+
+  void _opcaoSelecionada(String escolhaUsuario) {
+    var opcoes = ["pedra", "papel", "tesoura"];
+    var numero = Random().nextInt(3);
+    var escolhaApp = opcoes[numero];
+
+    setState(() {
+      _imagemApp = AssetImage("images/$escolhaApp.png");
+
+      // Lógica do resultado
+      if ((escolhaUsuario == "pedra" && escolhaApp == "tesoura") ||
+          (escolhaUsuario == "tesoura" && escolhaApp == "papel") ||
+          (escolhaUsuario == "papel" && escolhaApp == "pedra")) {
+        _resultadoFinal = "Parabéns!! Você ganhou";
+        _vitoriasUsuario++;
+      } else if (escolhaUsuario == escolhaApp) {
+        _resultadoFinal = "Empate!! Tente novamente";
+      } else {
+        _resultadoFinal = "Poxa!! Você perdeu";
+        _vitoriasApp++;
+      }
+    });
+  }
+
+  Color _getResultadoCor() {
+    if (_resultadoFinal.contains("ganhou")) {
+      return Colors.green;
+    } else if (_resultadoFinal.contains("perdeu")) {
+      return Colors.red;
+    } else {
+      return Colors.blue;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.blue,
+        foregroundColor: Colors.white,
+        title: const Text('JokenPO'),
+      ),
+      body: SingleChildScrollView(
+        // Permite rolagem caso o conteúdo ultrapasse a tela
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            const Padding(
+              padding: EdgeInsets.only(top: 32, bottom: 16),
+              child: Text(
+                "Escolha do App",
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+            ),
+            Image(image: _imagemApp, height: 120),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              child: Text(
+                "Placar: Você $_vitoriasUsuario x $_vitoriasApp App",
+                style:
+                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+            ),
+            const Padding(
+              padding: EdgeInsets.only(top: 32, bottom: 16),
+              child: Text(
+                "Escolha uma opção abaixo: ",
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: <Widget>[
+                _opcaoJogador("pedra"),
+                _opcaoJogador("papel"),
+                _opcaoJogador("tesoura"),
+              ],
+            ),
+            Padding(
+              padding: const EdgeInsets.only(top: 32, bottom: 16),
+              child: Text(
+                _resultadoFinal,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: _getResultadoCor(),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _opcaoJogador(String escolha) {
+    return Column(
+      children: [
+        InkWell(
+          onTap: () {
+            _opcaoSelecionada(escolha);
+            setState(() {
+              _isPressed = escolha; // Marcar o botão pressionado
+            });
+          },
+          onHighlightChanged: (isHighlighted) {
+            // Atualizar o estado quando o mouse entra ou sai (hover)
+            setState(() {
+              if (isHighlighted) {
+                _isPressed = escolha; // Botão em hover
+              } else {
+                _isPressed = ''; // Botão não pressionado
+              }
+            });
+          },
+          child: AnimatedScale(
+            duration: Duration(milliseconds: 150),
+            scale: _isPressed == escolha ? 0.9 : 1.0,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(16), // Borda arredondada
+              child: Image(
+                image: AssetImage('images/$escolha.png'),
+                height: 100,
+              ),
+            ),
+          ),
+        ),
+        Text(
+          escolha[0].toUpperCase() + escolha.substring(1),
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+      ],
+    );
+  }
+}
